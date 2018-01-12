@@ -149,34 +149,33 @@ u8 g_rx_buf[1024]; // 使用全局的数据缓存
 u8 g_num = 0;
 
 // 串口中断服务函数
-// 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于">"时，把值返回
+// 把接收到的数据存在一个数组缓冲区里面，当接收到的的值等于'\n'时，把值返回
 void macUSART1_IRQHandler( void )
 {
     if ( USART_GetITStatus( macUSART1, USART_IT_RXNE ) != RESET )
     {
         g_rx_buf[g_num] = USART_ReceiveData( macUSART1 );
 
-        if ( g_rx_buf[g_num] == FRAME_START )
+        if ( g_rx_buf[g_num] == '+' )
         {
             memset( g_rx_buf, 0, sizeof( g_rx_buf ) );
-            g_rx_buf[0] = FRAME_START;
+            g_rx_buf[0] = '+';
             g_num = 0;
             g_num++;
         }
-        else if ( g_rx_buf[g_num] == FRAME_END ) // 当接收到的值等于'>'时，结束一帧数据
+        else if ( g_rx_buf[g_num] == '\n' ) // 当接收到的值等于0x0A时，结束一帧数据
         {
             g_rx_buf[g_num + 1] = 0;    // 加上行尾标识符
 
             /* 发布消息到消息队列 queue */
             uartInQueue( &g_tUARTRxQueue, g_rx_buf ); // 不考虑竞争,所以不设置自旋锁
         }
-
         // 当值不等时候，则继续接收下一个
         else
         {
             g_num++;
 
-            if ( g_num > 50 ) //一帧数据最大50字节,超出则丢弃
+            if ( g_num > 100 ) //一帧数据最大100字节,超出则丢弃
             {
                 g_num = 0;
             }
@@ -204,9 +203,10 @@ void macUSART4_IRQHandler( void )
         else if ( g_rx_buf[g_num] == FRAME_END ) // 当接收到的值等于'>'时，结束一帧数据
         {
             g_rx_buf[g_num + 1] = 0;    // 加上行尾标识符
-
+            USART_ITConfig(macUSART1, USART_IT_RXNE, DISABLE);
             /* 发布消息到消息队列 queue */
             uartInitQueue( &g_tUARTRxQueue, g_rx_buf ); // 不考虑竞争,所以不设置自旋锁
+            USART_ITConfig(macUSART1, USART_IT_RXNE, ENABLE);
         }
 
         // 当值不等时候，则继续接收下一个
@@ -214,7 +214,7 @@ void macUSART4_IRQHandler( void )
         {
             g_num++;
 
-            if ( g_num > 50 ) //一帧数据最大50字节,超出则丢弃
+            if ( g_num > 100 ) //一帧数据最大100字节,超出则丢弃
             {
                 g_num = 0;
             }

@@ -83,8 +83,8 @@
 *********************************************************************************************************
 */
 
-extern u8 g_ucIsUpdateMenu;     // 更新显示
-
+extern u8 g_ucConnectMode;       // 1为联机模式,其他为单机测试模式
+extern u8 g_ucIsUpdateMenu;      // 更新显示
 extern u8 g_ucCurDlg;            // 当前显示的菜单号
 extern u8 g_ucHighLightRow;      // 当前显示的菜单需要高亮的行
 extern u8 g_ucCurID;             // 当前通信设备的号,在设置设备号时候使用
@@ -100,10 +100,14 @@ extern u8 g_ucaMechineExist[4];  // 卡机是否存在并通信正常
 extern Dlg           g_dlg[];
 extern Dlg g_dlg_fault_code[];
 
+extern u8 g_ucTransFlag;           // 数据发送间隔时间标志
+extern u32 g_uiTransInternal;      // 默认发送数据的间隔时间30s
+extern u32 g_uiGyro_y;             // 角速度阈值
+
 extern CanQueue  g_tCanRxQueue;        // CAN接收卡机数据队列
 extern UartQueue g_tUARTRxQueue;       // UART接收PC机数据队列
 extern CanRxMsg  g_tCanRxMsg;          // CAN数据出队元素
-extern u8 g_ucaUartRxMsg[50];          // UART数据出队元素
+extern u8 g_ucaUartRxMsg[100];          // UART数据出队元素
 
 /*
 *********************************************************************************************************
@@ -124,6 +128,12 @@ extern u8 g_ucaUartRxMsg[50];          // UART数据出队元素
 #else
 #define DEBUG_printf(format,...) do{}while(0)
 #endif
+
+
+void Kalman_Filter(float Accel,float Gyro);
+void Angle_Calculate(void);
+
+
 
 
 /*

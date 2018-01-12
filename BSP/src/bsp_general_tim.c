@@ -10,32 +10,17 @@ uint32_t timeMsg = 0; // ms 计时变量
   */
 void  GENERAL_TIM2_IRQHandler (void)
 {
-    // 1ms中断一次
+    // 1s中断一次
     if ( TIM_GetITStatus( GENERAL_TIM2, TIM_IT_Update) != RESET )
     {
         TIM_ClearITPendingBit(GENERAL_TIM2 , TIM_FLAG_Update);       // 清中断
-        g_tCardMechineStatusFrame.CARD_MECHINE1.cardNum[0] = g_uiaInitCardCount[1] / 100 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE1.cardNum[1] = g_uiaInitCardCount[1] / 10 % 10 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE1.cardNum[2] = g_uiaInitCardCount[1] % 10 + '0';
 
-
-        g_tCardMechineStatusFrame.CARD_MECHINE2.cardNum[0] = g_uiaInitCardCount[2] / 100 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE2.cardNum[1] = g_uiaInitCardCount[2] / 10 % 10 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE2.cardNum[2] = g_uiaInitCardCount[2] % 10 + '0';
-
-        g_tCardMechineStatusFrame.CARD_MECHINE3.cardNum[0] = g_uiaInitCardCount[3] / 100 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE3.cardNum[1] = g_uiaInitCardCount[3] / 10 % 10 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE3.cardNum[2] = g_uiaInitCardCount[3] % 10 + '0';
-
-        g_tCardMechineStatusFrame.CARD_MECHINE4.cardNum[0] = g_uiaInitCardCount[4] / 100 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE4.cardNum[1] = g_uiaInitCardCount[4] / 10 % 10 + '0';
-        g_tCardMechineStatusFrame.CARD_MECHINE4.cardNum[2] = g_uiaInitCardCount[4] % 10 + '0';
-
-        //timeMsg++;
-        //if (timeMsg == 2)    // 2秒上报一次系统消息
+        timeMsg++;
+        if (timeMsg == g_uiTransInternal)    // 默认30秒发送一次数据
         {
             timeMsg = 0;
-            printf ( "%s\r\n", ( char * ) &g_tCardMechineStatusFrame );
+            g_ucTransFlag = 1;
+            //printf ("AT+CMSGHEX=\"30\"\r\n");
         }
     }
 }
@@ -46,18 +31,12 @@ void  GENERAL_TIM2_IRQHandler (void)
   */
 void  GENERAL_TIM3_IRQHandler (void)
 {
-    // 1ms中断一次
+    // 10ms中断一次
     if ( TIM_GetITStatus( GENERAL_TIM3, TIM_IT_Update) != RESET )
     {
         TIM_ClearITPendingBit(GENERAL_TIM3 , TIM_FLAG_Update);       // 清中断
         time_0++;
-        if (time_0 == 30000)
-        {
-            time_0 = 0;
-            g_ucKeyValues = KEY_QUIT;                                   // 30秒钟将屏幕回到主显示
-            LCD_BAK_SET;
-            TIM_ITConfig(GENERAL_TIM3,TIM_IT_Update,DISABLE);            // 关闭中断
-        }
+        Angle_Calculate();
     }
 }
 

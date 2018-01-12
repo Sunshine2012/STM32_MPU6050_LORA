@@ -229,9 +229,15 @@ u8 * checkPriMsg (u8 ch)
 
                     g_tCardKeyPressFrame.MECHINE_ID = mtRxMessage.Data[1] + '0';		// 将数据转换未字符,然后将数据发送出去
                     g_tCardKeyPressFrame.CARD_MECHINE = mtRxMessage.Data[1] <= 2 ? '1' : '2';   //
-                    printf ( "%s\n", ( char * ) &g_tCardKeyPressFrame );
+                    if ( g_ucConnectMode == 1 )
+                    {
+                        printf ( "%s\n", ( char * ) &g_tCardKeyPressFrame );
+                    }
+                    else
+                    {
+                        myCANTransmit ( gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
+                    }
                     g_ucaDeviceIsSTBY[mtRxMessage.Data[1] -1] = 0; // 按键发卡流程开始之后，再次按键不再响应
-                    //myCANTransmit ( gt_TxMessage, mtRxMessage.Data[1], 0, WRITE_CARD_STATUS, CARD_IS_OK, 0, 0, NO_FAIL );
                     copyMenu ( mtRxMessage.Data[1], KEY_PRESS, 0, 8, 4 );
                     DEBUG_printf ( "%s\n", ( char * ) checkPriMsg ( CARD_KEY_PRESS ) );
                 }

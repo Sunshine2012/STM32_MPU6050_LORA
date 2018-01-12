@@ -71,6 +71,8 @@
 #include <frame.h>
 #include <bsp_font_flash.h>
 #include <bsp_dac.h>
+#include <bsp_i2c2.h>
+#include <bsp_mpu6050.h>
 #include <bsp_matrix_key.h>
 #include <bsp_GeneralTim.h>
 #include <bsp_lcd12864.h>
