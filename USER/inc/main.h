@@ -83,26 +83,11 @@
 *********************************************************************************************************
 */
 
-extern u8 g_ucConnectMode;       // 1为联机模式,其他为单机测试模式
-extern u8 g_ucIsUpdateMenu;      // 更新显示
-extern u8 g_ucCurDlg;            // 当前显示的菜单号
-extern u8 g_ucHighLightRow;      // 当前显示的菜单需要高亮的行
-extern u8 g_ucCurID;             // 当前通信设备的号,在设置设备号时候使用
-extern u8 g_ucIsNewWarningCode;  // 有新的报警,再次更新界面,在同一时候,有多个未处理的报警
-extern u8 g_ucUpWorkingID;       // 上工位工作卡机号
-extern u8 g_ucUpBackingID;       // 上工位备用卡机号
-extern u8 g_ucDownWorkingID;     // 下工位工作卡机号
-extern u8 g_ucDownBackingID;     // 下工位备用卡机号
-extern u8 g_ucaCardIsReady[4];   // 卡就绪
-extern u8 g_ucaFaultCode[4];     // 卡机是否有未处理的故障
-extern u8 g_ucaDeviceIsSTBY[4];  // 两个卡机处于待机(Standby)状态下,按键按下,主机收到按键信息发卡,只要有卡没有被取走,即使收到按键信息,也不再发卡.
-extern u8 g_ucaMechineExist[4];  // 卡机是否存在并通信正常
-extern Dlg           g_dlg[];
-extern Dlg g_dlg_fault_code[];
+
 
 extern u8 g_ucTransFlag;           // 数据发送间隔时间标志
 extern u32 g_uiTransInternal;      // 默认发送数据的间隔时间30s
-extern u32 g_uiGyro_y;             // 角速度阈值
+extern u32 g_uiGyro;               // 角速度阈值
 
 extern CanQueue  g_tCanRxQueue;        // CAN接收卡机数据队列
 extern UartQueue g_tUARTRxQueue;       // UART接收PC机数据队列
