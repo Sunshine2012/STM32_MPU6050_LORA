@@ -67,7 +67,7 @@
 #include <Queue.h>
 #include <bsp_led.h>
 #include <bsp_usart1.h>
-#include <bsp_i2c2.h>
+#include <bsp_myiic.h>
 #include <bsp_stm_flash.h>
 #include <bsp_mpu6050.h>
 #include <bsp_GeneralTim.h>

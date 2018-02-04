@@ -16,7 +16,7 @@ float g_fAngle_ax = 0; //由加速度计算的倾斜角度
 float g_fAngle = 0; //最终测量角度
 
 u8 g_ucTransFlag = 0;           // 数据发送间隔时间标志
-u32 g_uiTransInternal = 2;     // 默认发送数据的间隔时间30s
+u32 g_uiTransInternal = 30;     // 默认发送数据的间隔时间30s
 u32 g_uiGyro  =  3;             // 角速度阈值
 
 
@@ -28,67 +28,67 @@ u8 g_ucaUartRxMsg[100] = {0};        // UART数据出队元素
 void bspInit( void )
 {
     delayInit();                                                                // 定时函数
-    //LED_Init();                                                                 // 初始化 LED
+    LED_Init();                                                                 // 初始化 LED
     USART1_Config();                                                            // 初始化 USART1
 
     //canInitQueue( &g_tCanRxQueue );
     uartInitQueue( &g_tUARTRxQueue);
 
     I2C_Congiguration();
-
-    MPU6050_Init();
-
+    //IIC_Init();
+    delayMs( 10);
+    //MPU6050_Init();
 }
 
 /*************卡尔曼滤波*********************************/
 void Kalman_Filter(float Accel,float Gyro)
 {
 
-	static const float Q_angle=0.001;
-	static const float Q_gyro=0.003;
-	static const float R_angle=0.5;
-	static const float dt=0.01;	                  //dt为kalman滤波器采样时间;
-	static const char  C_0 = 1;
-	static float Q_bias, Angle_err;
-	static float PCt_0, PCt_1, E;
-	static float K_0, K_1, t_0, t_1;
-	static float Pdot[4] ={0,0,0,0};
-	static float PP[2][2] = { { 1, 0 },{ 0, 1 } };
+    static const float Q_angle=0.001;
+    static const float Q_gyro=0.003;
+    static const float R_angle=0.5;
+    static const float dt=0.01;	                  //dt为kalman滤波器采样时间;
+    static const char  C_0 = 1;
+    static float Q_bias, Angle_err;
+    static float PCt_0, PCt_1, E;
+    static float K_0, K_1, t_0, t_1;
+    static float Pdot[4] ={0,0,0,0};
+    static float PP[2][2] = { { 1, 0 },{ 0, 1 } };
 
-	g_fAngle+=(Gyro - Q_bias) * dt; //先验估计
+    g_fAngle+=(Gyro - Q_bias) * dt; //先验估计
 
-	Pdot[0]=Q_angle - PP[0][1] - PP[1][0]; // Pk-先验估计误差协方差的微分
+    Pdot[0]=Q_angle - PP[0][1] - PP[1][0]; // Pk-先验估计误差协方差的微分
 
-	Pdot[1]= -PP[1][1];
-	Pdot[2]= -PP[1][1];
-	Pdot[3]=Q_gyro;
+    Pdot[1]= -PP[1][1];
+    Pdot[2]= -PP[1][1];
+    Pdot[3]=Q_gyro;
 
-	PP[0][0] += Pdot[0] * dt;   // Pk-先验估计误差协方差微分的积分
-	PP[0][1] += Pdot[1] * dt;   // =先验估计误差协方差
-	PP[1][0] += Pdot[2] * dt;
-	PP[1][1] += Pdot[3] * dt;
+    PP[0][0] += Pdot[0] * dt;   // Pk-先验估计误差协方差微分的积分
+    PP[0][1] += Pdot[1] * dt;   // =先验估计误差协方差
+    PP[1][0] += Pdot[2] * dt;
+    PP[1][1] += Pdot[3] * dt;
 
-	Angle_err = Accel - g_fAngle;	//zk-先验估计
+    Angle_err = Accel - g_fAngle;	//zk-先验估计
 
-	PCt_0 = C_0 * PP[0][0];
-	PCt_1 = C_0 * PP[1][0];
+    PCt_0 = C_0 * PP[0][0];
+    PCt_1 = C_0 * PP[1][0];
 
-	E = R_angle + C_0 * PCt_0;
+    E = R_angle + C_0 * PCt_0;
 
-	K_0 = PCt_0 / E;
-	K_1 = PCt_1 / E;
+    K_0 = PCt_0 / E;
+    K_1 = PCt_1 / E;
 
-	t_0 = PCt_0;
-	t_1 = C_0 * PP[0][1];
+    t_0 = PCt_0;
+    t_1 = C_0 * PP[0][1];
 
-	PP[0][0] -= K_0 * t_0;		 //后验估计误差协方差
-	PP[0][1] -= K_0 * t_1;
-	PP[1][0] -= K_1 * t_0;
-	PP[1][1] -= K_1 * t_1;
+    PP[0][0] -= K_0 * t_0;		 //后验估计误差协方差
+    PP[0][1] -= K_0 * t_1;
+    PP[1][0] -= K_1 * t_0;
+    PP[1][1] -= K_1 * t_1;
 
-	g_fAngle	+= K_0 * Angle_err;	 //后验估计
-	Q_bias	+= K_1 * Angle_err;	 //后验估计
-	g_fGyro_y   = Gyro - Q_bias;	 //输出值(后验估计)的微分=角速度
+    g_fAngle	+= K_0 * Angle_err;	 //后验估计
+    Q_bias	+= K_1 * Angle_err;	 //后验估计
+    g_fGyro_y   = Gyro - Q_bias;	 //输出值(后验估计)的微分=角速度
 }
 
 void Angle_Calculate( void )
@@ -179,7 +179,10 @@ int main( void )
          g_s_z_base = 0;
     }
 
-    //IWDG_Init( 6, 625 );                                                        // 分频数为256,重载值为625,溢出时间为4s   (1/40000)* 256 * 625  = 4s          40000代表着独立看门狗的RC振荡器为40KHz
+    IWDG_Init( 6, 625 );        // 分频数为256,重载值为625,溢出时间为4s   (1/40000)* 256 * 625  = 4s          40000代表着独立看门狗的RC振荡器为40KHz
+
+    MPU6050_Init();
+
     generalTIM2Init();          // 定时器2初始化,1秒中断一次,更新时间由全局的数据决定
     //generalTIM3Init ();         // 定时器3初始化,10ms中断一次,计算陀螺仪的数据
 
@@ -345,8 +348,8 @@ int main( void )
                 printf ("AT+CMSGHEX=\"31\"\r\n");
             }
         }
-
-        delayMs( 10 );
+        //printf ("AT+CMSGHEX=\"30\"\r\n");
+        delayMs( 200 );
         IWDG_Feed();                // 如果没有产生硬件错误,喂狗,以防硬件问题造成的死机,程序无响应
     }
 }

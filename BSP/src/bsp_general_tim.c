@@ -16,11 +16,11 @@ void  GENERAL_TIM2_IRQHandler (void)
         TIM_ClearITPendingBit(GENERAL_TIM2 , TIM_FLAG_Update);       // 清中断
 
         timeMsg++;
+        macLED1_TOGGLE();
         if (timeMsg == g_uiTransInternal)    // 默认30秒发送一次数据
         {
             timeMsg = 0;
             g_ucTransFlag = 1;
-            //printf ("AT+CMSGHEX=\"30\"\r\n");
         }
     }
 }
